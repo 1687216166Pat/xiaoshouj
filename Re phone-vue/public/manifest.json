@@ -1,0 +1,15 @@
+{
+  "name": "Re phone",
+  "short_name": "Re phone",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#FAFAFA",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/1687216166Pat/photo/main/heart.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- 1. 核心适配：允许全屏并适配刘海屏 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <title>Re phone</title>
+
+    <!-- 2. PWA/iOS 桌面图标适配 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Re phone">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/1687216166Pat/photo/main/heart.png">
+    
+    <!-- 3. 引入你要求的花体字 -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&display=swap" rel="stylesheet">
+
+    <!-- 4. 引入 manifest (确保你 public 文件夹下有这个文件) -->
+    <link rel="manifest" href="/manifest.json">
+  </head>
+  <body>
+    <!-- 💡 【关键位置】Vue 会把所有的组件都塞进这个 div 里 -->
+    <!-- 如果删掉这一行，页面就会白屏 -->
+    <div id="app"></div>
+
+    <!-- 💡 【关键位置】这是连接 Vue 逻辑的入口文件 -->
+    <!-- 确保 src 路径指向你项目中的 main.js -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
