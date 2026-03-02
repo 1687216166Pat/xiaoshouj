@@ -1,8 +1,23 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import HomeView from './views/HomeView.vue';
 import SettingsApp from './components/SettingsApp.vue';
 import TalkApp from './components/TalkApp.vue';
+
+// Define currentView to avoid "not defined" error
+const currentView = ref('chat');
+
+// Add chatScrollArea ref for scrolling
+const chatScrollArea = ref(null);
+
+// 💡 新增：联系人姓名
+const contactName = ref('对方昵称'); // 请根据实际需要修改默认值
+
+// 💡 新增：联系人“人设”信息
+const persona = ref('你的默认人设描述'); // 请根据实际需要修改默认值
+
+// 💡 聊天消息列表
+const chatMessages = ref([]);
 
 // 1. 基础系统状态 (你原有的代码)
 const isSettingsOpen = ref(false);
@@ -42,9 +57,7 @@ const handleTouchStart = (e) => {
 };
 
 const handleTouchEnd = (e) => {
-  const endX = e.changedTouches[0].clientX;
   const endY = e.changedTouches[0].clientY;
-  const diffX = endX - startX;
   const diffY = endY - startY;
   const screenWidth = window.innerWidth;
   const screenHeight = window.innerHeight;
@@ -70,8 +83,8 @@ const handleTouchEnd = (e) => {
 const lockTime = ref('12:00');
 const updateTime = () => {
   const now = new Date();
-  lockTime.value = now.getHours().toString().padStart(2, '0') + ":" + 
-                   now.getMinutes().toString().padStart(2, '0');
+  lockTime.value = now.getHours().toString().padStart(2, '0') + ":" +
+    now.getMinutes().toString().padStart(2, '0');
 };
 
 onMounted(() => {
@@ -89,23 +102,23 @@ const handleModeUpdate = (newMode) => {
 
 // 💡 模拟“世界书 App”里已经存好的数据
 const allWorldBooks = ref([
-  { 
-    id: 1, 
-    title: '三体 · 黑暗森林', 
-    content: '宇宙是一座黑暗森林，每个文明都是带枪的猎人。', 
-    position: '插入顶部' 
+  {
+    id: 1,
+    title: '三体 · 黑暗森林',
+    content: '宇宙是一座黑暗森林，每个文明都是带枪的猎人。',
+    position: '插入顶部'
   },
-  { 
-    id: 2, 
-    title: '赛博朋克设置', 
-    content: '高科技，低生活。霓虹灯下的贫民窟。', 
-    position: '插入底部' 
+  {
+    id: 2,
+    title: '赛博朋克设置',
+    content: '高科技，低生活。霓虹灯下的贫民窟。',
+    position: '插入底部'
   },
-  { 
-    id: 3, 
-    title: '魔法学院', 
-    content: '咒语需要配合魔杖，情绪是魔力的源泉。', 
-    position: '插入人设后' 
+  {
+    id: 3,
+    title: '魔法学院',
+    content: '咒语需要配合魔杖，情绪是魔力的源泉。',
+    position: '插入人设后'
   }
 ]);
 // ==================== AI 主动发消息功能（智能决策版）====================
@@ -118,7 +131,7 @@ const consecutiveNoReply = ref(0); // 连续未回复次数
 
 // AI 主动发送消息的核心函数
 const sendActiveMessage = async () => {
-    // 检查是否开启了主动发消息功能
+  // 检查是否开启了主动发消息功能
   const activeMessageEnabled = localStorage.getItem('active_message') !== 'false';
   if (!activeMessageEnabled) {
     console.log('主动发消息功能已关闭');
@@ -136,7 +149,7 @@ const sendActiveMessage = async () => {
 
   // 计算用户沉默时长（小时）
   const silentHours = (Date.now() - lastActiveMessageTime.value) / (1000 * 60 * 60);
-  
+
   // 获取最近的聊天记录
   const recentMessages = chatMessages.value.slice(-8).map(msg => ({
     role: msg.type === 'me' ? 'user' : 'assistant',
@@ -150,10 +163,10 @@ const sendActiveMessage = async () => {
   if (silentHours > 6) {
     // 模式 3：用户很久没联系，表达想念/担心
     mode = 'missing';
-    
+
     // 30% 概率穿插模式 1 或 2
     const shouldMixMode = Math.random() < 0.3;
-    
+
     if (shouldMixMode && Math.random() > 0.5) {
       mode = 'continue'; // 穿插继续话题
     } else if (shouldMixMode) {
@@ -163,7 +176,7 @@ const sendActiveMessage = async () => {
   } else if (lastAIMessageReplied.value && recentMessages.length > 0) {
     // 模式 1：上次得到回复，继续话题
     mode = 'continue';
-    
+
   } else {
     // 模式 2：上次没得到回复，或随机触发，分享新鲜事
     mode = 'share';
@@ -212,7 +225,7 @@ const sendActiveMessage = async () => {
 
   } else { // mode === 'missing'
     const isMixedWithOther = consecutiveNoReply.value > 0 && Math.random() < 0.3;
-    
+
     if (isMixedWithOther) {
       // 穿插其他模式的内容，但带点"想念"的情绪
       systemPrompt = `${baseInfo}
@@ -233,7 +246,7 @@ const sendActiveMessage = async () => {
 - "今天看到一家新开的咖啡店，想起你说过想去试试新店"
 - "刚才突然想起你了，最近还好吗？"
 - "好久没聊天了，有点想你..."`;
-      
+
     } else {
       // 纯粹的想念/担心模式
       systemPrompt = `${baseInfo}
@@ -287,7 +300,7 @@ const sendActiveMessage = async () => {
     let data;
     try {
       data = JSON.parse(responseText);
-    } catch (e) {
+    } catch {
       console.error('解析 AI 响应失败');
       return;
     }
@@ -333,48 +346,45 @@ const sendActiveMessage = async () => {
 
 // 随机发送消息
 const scheduleRandomMessage = () => {
-  // 根据用户沉默时长调整发送频率
-  const silentHours = (Date.now() - lastActiveMessageTime.value) / (1000 * 60 * 60);
-  
-// 从设置里读取用户配置的时间间隔
-const messageInterval = parseInt(localStorage.getItem('message_interval') || '15');
-const messageUnit = localStorage.getItem('message_unit') || 'minute';
+  // 从设置里读取用户配置的时间间隔
+  const messageInterval = parseInt(localStorage.getItem('message_interval') || '15');
+  const messageUnit = localStorage.getItem('message_unit') || 'minute';
 
-// 转换成毫秒
-let baseInterval;
-switch (messageUnit) {
-  case 'second':
-    baseInterval = messageInterval * 1000;
-    break;
-  case 'minute':
-    baseInterval = messageInterval * 60 * 1000;
-    break;
-  case 'hour':
-    baseInterval = messageInterval * 60 * 60 * 1000;
-    break;
-  case 'day':
-    baseInterval = messageInterval * 24 * 60 * 60 * 1000;
-    break;
-  default:
-    baseInterval = 15 * 60 * 1000; // 默认 15 分钟
-}
+  // 转换成毫秒
+  let baseInterval;
+  switch (messageUnit) {
+    case 'second':
+      baseInterval = messageInterval * 1000;
+      break;
+    case 'minute':
+      baseInterval = messageInterval * 60 * 1000;
+      break;
+    case 'hour':
+      baseInterval = messageInterval * 60 * 60 * 1000;
+      break;
+    case 'day':
+      baseInterval = messageInterval * 24 * 60 * 60 * 1000;
+      break;
+    default:
+      baseInterval = 15 * 60 * 1000; // 默认 15 分钟
+  }
 
-// 设置随机范围（±30%）
-const minInterval = baseInterval * 0.7;
-const maxInterval = baseInterval * 1.3;
+  // 设置随机范围（±30%）
+  const minInterval = baseInterval * 0.7;
+  const maxInterval = baseInterval * 1.3;
 
-console.log(`主动发消息间隔：${messageInterval}${messageUnit}（${minInterval/1000}秒 - ${maxInterval/1000}秒）`);
+  console.log(`主动发消息间隔：${messageInterval}${messageUnit}（${minInterval / 1000}秒 - ${maxInterval / 1000}秒）`);
 
 
   const randomInterval = Math.floor(Math.random() * (maxInterval - minInterval)) + minInterval;
 
   setTimeout(() => {
-      const activeMessageEnabled = localStorage.getItem('active_message') !== 'false';
-  if (!activeMessageEnabled) {
-    console.log('主动发消息功能已关闭，跳过本次发送');
-    scheduleRandomMessage(); // 继续下一次检查
-    return;
-  }
+    const activeMessageEnabled = localStorage.getItem('active_message') !== 'false';
+    if (!activeMessageEnabled) {
+      console.log('主动发消息功能已关闭，跳过本次发送');
+      scheduleRandomMessage(); // 继续下一次检查
+      return;
+    }
     const timeSinceLastActive = Date.now() - lastActiveMessageTime.value;
     if (currentView.value === 'chat' && timeSinceLastActive > 5 * 60 * 1000) {
       sendActiveMessage();
@@ -385,7 +395,7 @@ console.log(`主动发消息间隔：${messageInterval}${messageUnit}（${minInt
 
 // 浏览器通知
 const showNotification = (title, body) => {
-    const backgroundNotificationEnabled = localStorage.getItem('background_notification') !== 'false';
+  const backgroundNotificationEnabled = localStorage.getItem('background_notification') !== 'false';
   if (!backgroundNotificationEnabled) {
     console.log('后台通知功能已关闭');
     return;
@@ -413,16 +423,12 @@ onMounted(() => {
   requestNotificationPermission();
   scheduleRandomMessage();
 });
-const handleUserActivity = () => {
-  lastActiveMessageTime.value = Date.now(); // 👈 用户说话了，重新计 15 分钟
-  console.log("系统感知：用户发消息了，重置 AI 主动发信计时器");
-};
 
 </script>
 
 <template>
   <div id="app" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
-    
+
     <!-- 1. 开屏动画 -->
     <Transition name="fade">
       <div v-if="isBooting" id="startup-screen">
@@ -451,12 +457,15 @@ const handleUserActivity = () => {
     <Transition name="ios-slide">
       <div v-show="isControlCenter" class="full-layer control-center">
         <div class="cc-panel">
-          
+
           <!-- A. 顶部符号栏 -->
           <div class="cc-top-bar">
             <div class="cc-btn-top">+</div>
             <div class="cc-btn-top">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                <line x1="12" y1="2" x2="12" y2="12"></line>
+              </svg>
             </div>
           </div>
 
@@ -495,40 +504,21 @@ const handleUserActivity = () => {
     <div class="home-bar"></div>
 
     <!-- 5. 主屏幕层 -->
-<HomeView 
-  :mode="globalMode" 
-  :android-bg="androidBg" 
-  :ios-bg="iosBg"
-  @open-settings="isSettingsOpen = true" 
-  @open-talk="isTalkOpen = true" 
-/>
+    <!-- Add ref to the chat scroll area if you have a chat container -->
+    <HomeView :mode="globalMode" :android-bg="androidBg" :ios-bg="iosBg" @open-settings="isSettingsOpen = true"
+      @open-talk="isTalkOpen = true" ref="chatScrollArea" />
 
     <!-- 6. 设置 App (iOS 缩放动效版) -->
     <Transition name="app-zoom">
-  <SettingsApp 
-    v-if="isSettingsOpen" 
-    :mode="globalMode"
-    :android-bg="androidBg"
-    :ios-bg="iosBg"
-    @close="isSettingsOpen = false" 
-    @update-mode="handleModeUpdate"
-    @update-wallpaper="updateWallpaper" 
-  />
+      <SettingsApp v-if="isSettingsOpen" :mode="globalMode" :android-bg="androidBg" :ios-bg="iosBg"
+        @close="isSettingsOpen = false" @update-mode="handleModeUpdate" @update-wallpaper="updateWallpaper" />
     </Transition>
 
     <!-- 7. Talk App (同样使用缩放动效) -->
-<Transition name="app-zoom">
-  <TalkApp 
-    v-if="isTalkOpen" 
-    :mode="globalMode"
-    :android-bg="androidBg"
-    :ios-bg="iosBg"
-    :world-books="allWorldBooks"
-    @close="isTalkOpen = false" 
-    @update-mode="handleModeUpdate"
-    @update-wallpaper="updateWallpaper" 
-  />
-</Transition>
+    <Transition name="app-zoom">
+      <TalkApp v-if="isTalkOpen" :mode="globalMode" :android-bg="androidBg" :ios-bg="iosBg" :world-books="allWorldBooks"
+        @close="isTalkOpen = false" @update-mode="handleModeUpdate" @update-wallpaper="updateWallpaper" />
+    </Transition>
 
 
   </div> <!-- 👈 对应 id="app" 的闭合 -->
@@ -536,11 +526,13 @@ const handleUserActivity = () => {
 
 <style>
 /* --- 全局适配 --- */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100vh; /* 强行 100% 物理高度 */
+  height: 100vh;
+  /* 强行 100% 物理高度 */
   overflow: hidden;
   /* 💡 核心：背景图直接写在 body 上，确保它能穿透所有层直达底边 */
   background: url('https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/IMG_4016.jpeg') center/cover no-repeat;
@@ -558,18 +550,55 @@ html, body {
 }
 
 /* --- 覆盖层通用 --- */
-.full-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50000; display: flex; flex-direction: column; }
+.full-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 50000;
+  display: flex;
+  flex-direction: column;
+}
 
 /* 锁屏 & 控制中心样式 */
-.lock-screen { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(20px); color: white; justify-content: flex-start; align-items: center; }
-.lock-content { margin-top: 120px; text-align: center; }
-.lock-time { font-size: 80px; font-weight: 200; }
-.lock-date { font-size: 20px; opacity: 0.8; }
-.swipe-hint { position: absolute; bottom: 100px; opacity: 0.5; font-size: 14px; color: white; width: 100%; text-align: center; }
+.lock-screen {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  color: white;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.lock-content {
+  margin-top: 120px;
+  text-align: center;
+}
+
+.lock-time {
+  font-size: 80px;
+  font-weight: 200;
+}
+
+.lock-date {
+  font-size: 20px;
+  opacity: 0.8;
+}
+
+.swipe-hint {
+  position: absolute;
+  bottom: 100px;
+  opacity: 0.5;
+  font-size: 14px;
+  color: white;
+  width: 100%;
+  text-align: center;
+}
 
 /* --- 控制中心重制版样式 --- */
 .control-center {
-  background: rgba(30, 30, 30, 0.2); /* 稍微深一点的磨砂 */
+  background: rgba(30, 30, 30, 0.2);
+  /* 稍微深一点的磨砂 */
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
 }
@@ -603,12 +632,14 @@ html, body {
 
 /* 音乐区域：大段空行设计 */
 .cc-music-section {
-  margin: 60px 0 40px; /* 上边距 60px 产生大段空行 */
+  margin: 60px 0 40px;
+  /* 上边距 60px 产生大段空行 */
   text-align: center;
 }
 
 .music-progress {
-  font-family: monospace; /* 等宽字体确保进度条不乱 */
+  font-family: monospace;
+  /* 等宽字体确保进度条不乱 */
   font-size: 14px;
   letter-spacing: 1px;
   opacity: 0.9;
@@ -632,7 +663,8 @@ html, body {
   opacity: 0.8;
 }
 
-.cc-status-left, .cc-status-right {
+.cc-status-left,
+.cc-status-right {
   display: flex;
   gap: 10px;
   align-items: center;
@@ -648,7 +680,8 @@ html, body {
 .cc-card {
   background: rgba(255, 255, 255, 0.12);
   height: 100px;
-  border-radius: 25px; /* iOS 18 风格大圆角 */
+  border-radius: 25px;
+  /* iOS 18 风格大圆角 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -660,7 +693,8 @@ html, body {
 /* 💡 你的模拟白条：直接定位在最底 0 像素 */
 .home-bar {
   position: fixed;
-  bottom: 0; /* 👈 撞击最底边 */
+  bottom: 0;
+  /* 👈 撞击最底边 */
   left: 50%;
   transform: translateX(-50%);
   width: 120px;
@@ -673,77 +707,117 @@ html, body {
 /* --- 动画系统 --- */
 
 /* 1. 下拉动画 */
-.ios-slide-enter-active, .ios-slide-leave-active { transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
-.ios-slide-enter-from, .ios-slide-leave-to { transform: translateY(-100%); opacity: 0; }
+.ios-slide-enter-active,
+.ios-slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ios-slide-enter-from,
+.ios-slide-leave-to {
+  transform: translateY(-100%);
+  opacity: 0;
+}
 
 /* 2. App 缩放返回动画 (仿 iOS) */
-.app-zoom-enter-active, .app-zoom-leave-active {
+.app-zoom-enter-active,
+.app-zoom-leave-active {
   transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.4s ease;
 }
-.app-zoom-enter-from, .app-zoom-leave-to {
+
+.app-zoom-enter-from,
+.app-zoom-leave-to {
   opacity: 0;
-  transform: scale(0.85); /* 缩放效果 */
+  transform: scale(0.85);
+  /* 缩放效果 */
 }
 
 /* 3. 开屏淡出 */
-.fade-leave-active { transition: opacity 0.8s; }
-.fade-leave-to { opacity: 0; }
+.fade-leave-active {
+  transition: opacity 0.8s;
+}
+
+.fade-leave-to {
+  opacity: 0;
+}
 
 /* ============================================================
    【开屏动画样式 - 最终修正版】
    ============================================================ */
 
 /* 1. 启动页背景 */
-#startup-screen { 
-    position: fixed; 
-    top: 0; left: 0; 
-    width: 100vw; height: 100vh; 
-    background-color: #FAFAFA; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    z-index: 100000; 
+#startup-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #FAFAFA;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100000;
 }
 
 /* 2. 整个内容篮子：负责整体高度位置 */
 .startup-content {
-    text-align: center;
-    width: 220px;
-    /* 💡 核心修改：从 -20px 改为 -100px，让它飞上去 */
-    transform: translateY(-100px); 
-    transition: transform 0.3s ease; 
+  text-align: center;
+  width: 220px;
+  /* 💡 核心修改：从 -20px 改为 -100px，让它飞上去 */
+  transform: translateY(-100px);
+  transition: transform 0.3s ease;
 }
 
 /* 3. Logo文字：负责找回消失的文字并添加动画 */
-.re-phone-logo { 
-    font-family: 'Dancing Script', cursive; 
-    font-size: 48px; 
-    color: #444; 
-    margin-bottom: 25px; /* 👈 缩短文字和小球的距离，更紧凑 */
-    
-    /* 💡 必须加上这两行，文字才会显示并有浮现效果 */
-    opacity: 0; 
-    animation: logoFadeIn 1s forwards 0.3s; 
+.re-phone-logo {
+  font-family: 'Dancing Script', cursive;
+  font-size: 48px;
+  color: #444;
+  margin-bottom: 25px;
+  /* 👈 缩短文字和小球的距离，更紧凑 */
+
+  /* 💡 必须加上这两行，文字才会显示并有浮现效果 */
+  opacity: 0;
+  animation: logoFadeIn 1s forwards 0.3s;
 }
 
 /* 4. 💡 必须加上这个动画定义，否则文字是死活出不来的 */
 @keyframes logoFadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 5. 进度条和弹性小球 */
-.progress-wrapper { position: relative; width: 200px; height: 14px;display: flex;align-items: center; margin: 0 auto; }
-.progress-line { width: 100%; height: 1px; background-color: #E0E0E0; }
-.progress-ball { 
-    position: absolute; 
-    top: 50%;
-    width: 14px; height: 14px; 
-    background-color: #FAFAFA; 
-    border: 2px solid #FFB6C1; 
-    border-radius: 50%; 
-    transform: translate(-50%, -50%); 
-    transition: left 2.2s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
+.progress-wrapper {
+  position: relative;
+  width: 200px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
 }
 
+.progress-line {
+  width: 100%;
+  height: 1px;
+  background-color: #E0E0E0;
+}
+
+.progress-ball {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  background-color: #FAFAFA;
+  border: 2px solid #FFB6C1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: left 2.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
 </style>

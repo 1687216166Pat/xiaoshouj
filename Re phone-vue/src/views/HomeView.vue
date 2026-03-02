@@ -1,12 +1,12 @@
 <template>
-    <!-- 💡 这里的 :style 会根据模式自动切换背景图 -->
-<div class="iphone-screen" :style="{ 
-  backgroundImage: props.mode === 'android' 
-    ? `url(${props.androidBg})` 
-    : `url(${props.iosBg})` 
-}">
+  <!-- 💡 这里的 :style 会根据模式自动切换背景图 -->
+  <div class="iphone-screen" :style="{
+    backgroundImage: props.mode === 'android'
+      ? `url(${props.androidBg})`
+      : `url(${props.iosBg})`
+  }">
 
-    
+
     <!-- 1. 顶部状态栏 -->
     <div class="status-bar" :class="props.mode">
       <template v-if="props.mode === 'android'">
@@ -22,7 +22,10 @@
             <div class="bar active" style="height:100%"></div>
           </div>
           <div class="sb-wifi">
-            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,4.5c4.5,0,8.6,1.8,11.5,4.7l-2.1,2.5c-2.4-2.4-5.7-3.9-9.4-3.9s-7,1.5-9.4,3.9L0.5,9.2 C3.4,6.3,7.5,4.5,12,4.5z M12,10.5c2.7,0,5.2,1.1,6.9,2.8l-2.1,2.5c-1.2-1.2-2.9-1.9-4.8-1.9s-3.6,0.7-4.8,1.9L5.1,13.3 C6.8,11.6,9.3,10.5,12,10.5z M12,16.5c0.9,0,1.8,0.4,2.4,1l-2.4,2.9l-2.4-2.9C10.2,16.9,11.1,16.5,12,16.5z"/></svg>
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M12,4.5c4.5,0,8.6,1.8,11.5,4.7l-2.1,2.5c-2.4-2.4-5.7-3.9-9.4-3.9s-7,1.5-9.4,3.9L0.5,9.2 C3.4,6.3,7.5,4.5,12,4.5z M12,10.5c2.7,0,5.2,1.1,6.9,2.8l-2.1,2.5c-1.2-1.2-2.9-1.9-4.8-1.9s-3.6,0.7-4.8,1.9L5.1,13.3 C6.8,11.6,9.3,10.5,12,10.5z M12,16.5c0.9,0,1.8,0.4,2.4,1l-2.4,2.9l-2.4-2.9C10.2,16.9,11.1,16.5,12,16.5z" />
+            </svg>
           </div>
           <div class="sb-battery">
             <div class="sb-bat-level" style="width:80%"></div>
@@ -38,144 +41,138 @@
 
     <!-- 2. 分页传送带 -->
     <div class="pages-container" ref="containerRef" @scroll="handleScroll">
-      
+
       <!-- 第1页 (保持现状) -->
       <div class="page page-1"></div>
 
       <!-- 第2页 (主屏幕：在这里增加小组件) -->
-<div class="page page-2">
-  
-  <!-- 1. 创建一个大的安卓专用容器，统一控制显示隐藏 -->
-  <div v-if="props.mode === 'android'" class="android-full-layout">
-    
-    <!-- A. 上方的两个方块小组件 -->
-    <div class="android-widgets-container">
-      <div class="widget">
-        <div class="widget-title">恋爱纪念日</div>
-        <div class="days-count">{{ anniversaryDays }}</div>
-        <div class="days-label">Days Together</div>
-      </div>
-      <div class="widget" @click="updateWeather">
-        <div class="weather-main">
-          <span class="temp">{{ weather.temp }}°</span>
-          <span class="desc">{{ weather.desc }}</span>
-        </div>
-        <div class="city-name">{{ weather.city }}</div>
-      </div>
-    </div>
+      <div class="page page-2">
 
-    <!-- B. 今日箴言 Banner -->
-    <div class="motto-banner">
-      <div class="motto-image-box" @click="triggerUpload">
-        <img :src="mottoImage" class="motto-img" />
-        <input type="file" ref="fileInput" hidden @change="handleImageChange" accept="image/*" />
-      </div>
-      <div class="motto-text-box">
-        <div class="motto-title">今日箴言</div>
-        <div class="motto-content">保持热爱，共赴山海。</div>
-      </div>
-    </div>
+        <!-- 1. 创建一个大的安卓专用容器，统一控制显示隐藏 -->
+        <div v-if="props.mode === 'android'" class="android-full-layout">
 
-    <!-- C. 尺子立牌组件 -->
-    <div class="ruler-widget-container">
-      <div class="ruler-track" ref="rulerTrackRef">
-        <div class="badge-stand" 
-             :style="{ left: standLeft + 'px' }"
-             @touchstart="onDragStart"
-             @touchmove="onDragMove"
-             @touchend="onDragEnd">
-          
-          <div class="stand-bubble" :class="{ show: isBubbleShow }">{{ bubbleText }}</div>
-
-          <!-- 💡 关键修改：给头像框加了点击事件 -->
-          <div class="badge-circle" @click.stop="triggerBadgeUpload">
-            
-            <!-- 💡 关键修改：src 变成了 :src，绑定了变量 -->
-            <img :src="badgeImage" />
-
-            <!-- 💡 关键修改：塞进了一个隐藏的上传按钮 -->
-            <input 
-              type="file" 
-              ref="badgeFileInput" 
-              hidden 
-              accept="image/*" 
-              @change="handleBadgeChange" 
-            />
+          <!-- A. 上方的两个方块小组件 -->
+          <div class="android-widgets-container">
+            <div class="widget">
+              <div class="widget-title">恋爱纪念日</div>
+              <div class="days-count">{{ anniversaryDays }}</div>
+              <div class="days-label">Days Together</div>
+            </div>
+            <div class="widget" @click="updateWeather">
+              <div class="weather-main">
+                <span class="temp">{{ weather.temp }}°</span>
+                <span class="desc">{{ weather.desc }}</span>
+              </div>
+              <div class="city-name">{{ weather.city }}</div>
+            </div>
           </div>
 
-          <div class="badge-base"></div>
+          <!-- B. 今日箴言 Banner -->
+          <div class="motto-banner">
+            <div class="motto-image-box" @click="triggerUpload">
+              <img :src="mottoImage" class="motto-img" />
+              <input type="file" ref="fileInput" hidden @change="handleImageChange" accept="image/*" />
+            </div>
+            <div class="motto-text-box">
+              <div class="motto-title">今日箴言</div>
+              <div class="motto-content">保持热爱，共赴山海。</div>
+            </div>
+          </div>
+
+          <!-- C. 尺子立牌组件 -->
+          <div class="ruler-widget-container">
+            <div class="ruler-track" ref="rulerTrackRef">
+              <div class="badge-stand" :style="{ left: standLeft + 'px' }" @touchstart="onDragStart"
+                @touchmove="onDragMove" @touchend="onDragEnd">
+
+                <div class="stand-bubble" :class="{ show: isBubbleShow }">{{ bubbleText }}</div>
+
+                <!-- 💡 关键修改：给头像框加了点击事件 -->
+                <div class="badge-circle" @click.stop="triggerBadgeUpload">
+
+                  <!-- 💡 关键修改：src 变成了 :src，绑定了变量 -->
+                  <img :src="badgeImage" />
+
+                  <!-- 💡 关键修改：塞进了一个隐藏的上传按钮 -->
+                  <input type="file" ref="badgeFileInput" hidden accept="image/*" @change="handleBadgeChange" />
+                </div>
+
+                <div class="badge-base"></div>
+              </div>
+            </div>
+          </div>
+
+        </div> <!-- 👈 安卓大容器结束 -->
+
+        <!-- 2. 这里是 iOS 模式的预留位 -->
+        <div v-if="props.mode === 'ios'" class="ios-full-layout">
+          <!-- 我们下一步要在这里加灰色毛玻璃小组件 -->
+        </div>
+
+      </div>
+
+
+      <!-- 第3页 (App 库) -->
+      <div class="page page-3">
+        <div class="apps-grid">
+          <!-- 1. 循环 appList 保持不变 -->
+          <div v-for="app in appList" :key="app.id" class="app-item">
+
+            <!-- 2. 修改盒子：删掉 :style 里的 backgroundColor，因为数据里已经没 color 了 -->
+            <div class="app-icon-box">
+
+              <!-- 3. 核心修改：插入图片标签，并绑定 :src -->
+              <!-- 注意：必须写 :src 而不是 src -->
+              <img :src="app.icon" class="app-icon-img" />
+
+              <!-- 4. 如果是信息 App，显示红点数字 -->
+              <div v-if="app.badge" class="app-badge">{{ app.badge }}</div>
+            </div>
+
+            <!-- 5. App 名称保持不变 -->
+            <span class="app-label">{{ app.name }}</span>
+          </div>
         </div>
       </div>
-    </div>
-
-  </div> <!-- 👈 安卓大容器结束 -->
-
-  <!-- 2. 这里是 iOS 模式的预留位 -->
-  <div v-if="props.mode === 'ios'" class="ios-full-layout">
-    <!-- 我们下一步要在这里加灰色毛玻璃小组件 -->
-  </div>
-
-</div>
-
-
-<!-- 第3页 (App 库) -->
-<div class="page page-3">
-  <div class="apps-grid">
-    <!-- 1. 循环 appList 保持不变 -->
-    <div v-for="app in appList" :key="app.id" class="app-item">
-      
-      <!-- 2. 修改盒子：删掉 :style 里的 backgroundColor，因为数据里已经没 color 了 -->
-      <div class="app-icon-box">
-        
-        <!-- 3. 核心修改：插入图片标签，并绑定 :src -->
-        <!-- 注意：必须写 :src 而不是 src -->
-        <img :src="app.icon" class="app-icon-img" />
-        
-        <!-- 4. 如果是信息 App，显示红点数字 -->
-        <div v-if="app.badge" class="app-badge">{{ app.badge }}</div>
-      </div>
-
-      <!-- 5. App 名称保持不变 -->
-      <span class="app-label">{{ app.name }}</span>
-    </div>
-  </div>
-</div>
     </div>
 
     <!-- 3. Dock 栏 (修改位置在这里) -->
     <div class="dock-container">
-<div class="dock">
-  <div class="dock-item" @click="$emit('open-talk')">
-    <img src="https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/a27d8264fv991e8df1dbeb536e03d280.png" class="dock-icon-img">
-    <span class="dock-label">Talk</span>
-  </div>
-  <div class="dock-item" @click="$emit('open-settings')">
-    <img src="https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/f9d3f4da6rcb3778c460a508f774d0c0.png" class="dock-icon-img">
-    <span class="dock-label">设置</span>
-  </div>
-  <div class="dock-item">
-    <img src="https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/bf7367681vd2aa91567d4c09c2f033ce.png" class="dock-icon-img">
-    <span class="dock-label">电话</span>
-  </div>
-</div>
+      <div class="dock">
+        <div class="dock-item" @click="$emit('open-talk')">
+          <img src="https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/a27d8264fv991e8df1dbeb536e03d280.png"
+            class="dock-icon-img">
+          <span class="dock-label">Talk</span>
+        </div>
+        <div class="dock-item" @click="$emit('open-settings')">
+          <img src="https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/f9d3f4da6rcb3778c460a508f774d0c0.png"
+            class="dock-icon-img">
+          <span class="dock-label">设置</span>
+        </div>
+        <div class="dock-item">
+          <img src="https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/bf7367681vd2aa91567d4c09c2f033ce.png"
+            class="dock-icon-img">
+          <span class="dock-label">电话</span>
+        </div>
+      </div>
 
     </div>
 
     <!-- 4. 小圆点 -->
     <div class="page-indicators">
-      <div v-for="i in 3" :key="i" class="dot" :class="{ active: currentPage === i-1 }"></div>
+      <div v-for="i in 3" :key="i" class="dot" :class="{ active: currentPage === i - 1 }"></div>
     </div>
 
   </div>
 </template>
 
 <script setup>
-import { ref, reactive,onMounted, onUnmounted, defineEmits } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, defineEmits } from 'vue';
 
 // 必须声明我们要向外发送的信号名字
 // 接收来自 App.vue 的 mode
-const props = defineProps(['mode', 'androidBg', 'iosBg']); 
-const emit = defineEmits(['open-settings', 'open-talk']);
+const props = defineProps(['mode', 'androidBg', 'iosBg']);
+defineEmits(['open-settings', 'open-talk']);
 
 // --- 1. 恋爱纪念日逻辑 ---
 const anniversaryDays = ref(0);
@@ -204,13 +201,13 @@ const updateWeather = async () => {
     // 再根据经纬度获取天气
     const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${ipData.latitude}&longitude=${ipData.longitude}&current_weather=true`);
     const wData = await wRes.json();
-    
+
     if (wData.current_weather) {
       weather.temp = Math.round(wData.current_weather.temperature);
       const code = wData.current_weather.weathercode;
       weather.desc = code <= 3 ? '晴朗' : '多云';
     }
-  } catch (e) {
+  } catch {
     weather.city = "失败";
     weather.desc = "重试";
   }
@@ -268,18 +265,18 @@ const onDragEnd = () => { isDragging = false; };
 // 核心：触摸移动计算
 const onDragMove = (e) => {
   if (!isDragging) return;
-  
+
   const touch = e.touches[0];
   const trackRect = rulerTrackRef.value.getBoundingClientRect();
-  
+
   // 计算手指相对于轨道左边缘的位置，减去 30 (立牌宽度的一半) 让手指居中
   let newLeft = touch.clientX - trackRect.left - 30;
-  
+
   // 边界控制：不准滑出轨道
   const maxLeft = trackRect.width - 60; // 60 是立牌宽度
   if (newLeft < 0) newLeft = 0;
   if (newLeft > maxLeft) newLeft = maxLeft;
-  
+
   standLeft.value = newLeft;
 
   // 检查是否到达甜蜜点 (百分比计算)
@@ -354,13 +351,13 @@ const handleScroll = () => {
 
 // 第三页保留的 App 
 const appList = ref([
-  { id: 'forum', name: '论坛', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/8661cc78bmad154465534c811c4902ec.png'},
-  { id: 'worldbook', name: '世界书', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/07355bf0dkfec500cf76ca11ba833f47.png'},
-  { id: 'diary', name: '日记', icon: "https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/9258014d3n318cd2fbc760346c738a9d.png"},
-  { id: 'search', name: '查手机', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/6c527e82bqd2840cdce878437c9e3948.png'},
-  { id: 'pomodoro', name: '番茄钟', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/4782d731dk264d611f2133cff36d09e5.png'},
-  { id: 'checkin', name: '打卡', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/7d3f66a8bt67b89310eb968d852c95c3.png'},
-  { id: 'anniversary', name: '纪念日', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/349d11dceh2778a36596296a6cf0b47a.png'},
+  { id: 'forum', name: '论坛', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/8661cc78bmad154465534c811c4902ec.png' },
+  { id: 'worldbook', name: '世界书', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/07355bf0dkfec500cf76ca11ba833f47.png' },
+  { id: 'diary', name: '日记', icon: "https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/9258014d3n318cd2fbc760346c738a9d.png" },
+  { id: 'search', name: '查手机', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/6c527e82bqd2840cdce878437c9e3948.png' },
+  { id: 'pomodoro', name: '番茄钟', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/4782d731dk264d611f2133cff36d09e5.png' },
+  { id: 'checkin', name: '打卡', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/7d3f66a8bt67b89310eb968d852c95c3.png' },
+  { id: 'anniversary', name: '纪念日', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/349d11dceh2778a36596296a6cf0b47a.png' },
   { id: 'sms', name: '信息', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/0919010c0ufaa60e76b9f8845cb7c6c3.png', badge: 1 }
 ]);
 
@@ -374,9 +371,12 @@ const appList = ref([
   width: 100%;
   height: 100%;
   flex: 1;
-  background-color: transparent; /* 👈 必须透明，让背景图透出来 */
-  background-size: cover;        /* 👈 确保图片铺满 */
-  background-position: center;   /* 👈 确保图片居中 */
+  background-color: transparent;
+  /* 👈 必须透明，让背景图透出来 */
+  background-size: cover;
+  /* 👈 确保图片铺满 */
+  background-position: center;
+  /* 👈 确保图片居中 */
   background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
@@ -386,7 +386,7 @@ const appList = ref([
 .status-bar {
   width: 100%;
   /* 💡 只有文字和图标需要避开刘海 */
-  padding-top: env(safe-area-inset-top, 20px); 
+  padding-top: env(safe-area-inset-top, 20px);
   padding-left: 20px;
   padding-right: 20px;
   box-sizing: border-box;
@@ -395,37 +395,136 @@ const appList = ref([
   align-items: center;
 }
 
-.sb-left, .sb-right { display: flex; align-items: center; gap: 6px; }
-.sb-signal { display: flex; align-items: flex-end; gap: 2px; width: 18px; height: 12px; }
-.sb-signal .bar { width: 3px; background: rgba(0, 0, 0, 0.2); border-radius: 1px; }
-.sb-signal .bar.active { background: #333; }
-.sb-wifi { width: 18px; height: 18px; display: flex; align-items: center; }
-.sb-battery { width: 25px; height: 12px; border: 1.5px solid #333; border-radius: 3px; position: relative; padding: 1px; display: flex; align-items: center; }
-.sb-battery::after { content: ''; position: absolute; right: -3.5px; top: 3px; width: 2px; height: 4px; background: #333; border-radius: 0 1px 1px 0; }
-.sb-bat-level { height: 100%; background: #333; border-radius: 1px; }
-.battery-heart { position: absolute; font-size: 8px; width: 100%; text-align: center; left: 0; top: 0; line-height: 12px; }
+.sb-left,
+.sb-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sb-signal {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 18px;
+  height: 12px;
+}
+
+.sb-signal .bar {
+  width: 3px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 1px;
+}
+
+.sb-signal .bar.active {
+  background: #333;
+}
+
+.sb-wifi {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.sb-battery {
+  width: 25px;
+  height: 12px;
+  border: 1.5px solid #333;
+  border-radius: 3px;
+  position: relative;
+  padding: 1px;
+  display: flex;
+  align-items: center;
+}
+
+.sb-battery::after {
+  content: '';
+  position: absolute;
+  right: -3.5px;
+  top: 3px;
+  width: 2px;
+  height: 4px;
+  background: #333;
+  border-radius: 0 1px 1px 0;
+}
+
+.sb-bat-level {
+  height: 100%;
+  background: #333;
+  border-radius: 1px;
+}
+
+.battery-heart {
+  position: absolute;
+  font-size: 8px;
+  width: 100%;
+  text-align: center;
+  left: 0;
+  top: 0;
+  line-height: 12px;
+}
+
 .pages-container {
-  flex: 1; /* 👈 它是弹簧，负责把 Dock 往下顶 */
+  flex: 1;
+  /* 👈 它是弹簧，负责把 Dock 往下顶 */
   display: flex;
   width: 100%;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
 }
-.pages-container::-webkit-scrollbar { display: none; }
-.page { flex: 0 0 100%; width: 100%; height: 100%; scroll-snap-align: center; box-sizing: border-box; padding-top: 20px; }
-.apps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px 15px; padding: 20px; }
-.app-item { display: flex; flex-direction: column; align-items: center; }
-.app-icon-box { width: 60px; height: 60px; border-radius: 14px; display: flex; justify-content: center; align-items: center; margin-bottom: 6px; }
-.app-label { font-size: 11px; color: rgba(0, 0, 0, 0.7); }
+
+.pages-container::-webkit-scrollbar {
+  display: none;
+}
+
+.page {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: center;
+  box-sizing: border-box;
+  padding-top: 20px;
+}
+
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 25px 15px;
+  padding: 20px;
+}
+
+.app-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-icon-box {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.app-label {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.7);
+}
+
 .dock-container {
   width: 100%;
-  height: 100px; /* 👈 固定高度，确保图标不乱动 */
+  height: 100px;
+  /* 👈 固定高度，确保图标不乱动 */
   display: flex;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
   /* 💡 关键：这里不再写 padding-bottom，让它直接贴着底边 */
-  padding-bottom: 0; 
+  padding-bottom: 0;
   margin-bottom: 0;
 }
 
@@ -440,45 +539,102 @@ const appList = ref([
   align-items: center;
 }
 
-.dock-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-.dock-icon { width: 55px; height: 55px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 28px; }
-.talk-bg { background-color: #4cd964; }
-.settings-bg { background-color: #8e8e93; }
-.phone-bg { background-color: #007aff; }
+.dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.dock-icon {
+  width: 55px;
+  height: 55px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+}
+
+.talk-bg {
+  background-color: #4cd964;
+}
+
+.settings-bg {
+  background-color: #8e8e93;
+}
+
+.phone-bg {
+  background-color: #007aff;
+}
+
 /* 💡 [新增] 确保图标盒子是相对定位，作为红点的“底座” */
 .app-icon-box {
   width: 60px;
   height: 60px;
-  position: relative; /* 👈 这一行最关键，不能漏 */
+  position: relative;
+  /* 👈 这一行最关键，不能漏 */
 }
 
 /* 💡 [新增] 经典的 iOS 小红点样式 */
 .app-badge {
   position: absolute;
-  top: -5px;    /* 向上偏移，压在边框上 */
-  right: -5px;  /* 向右偏移 */
-  
-  background-color: #FF3B30; /* 苹果官方红 */
+  top: -5px;
+  /* 向上偏移，压在边框上 */
+  right: -5px;
+  /* 向右偏移 */
+
+  background-color: #FF3B30;
+  /* 苹果官方红 */
   color: white;
   font-size: 12px;
   font-weight: bold;
-  
+
   min-width: 20px;
   height: 20px;
-  border-radius: 50%; /* 圆形 */
-  
+  border-radius: 50%;
+  /* 圆形 */
+
   display: flex;
   justify-content: center;
   align-items: center;
-  
-  border: 2px solid white; /* 增加一圈白边，更有质感 */
+
+  border: 2px solid white;
+  /* 增加一圈白边，更有质感 */
   box-sizing: border-box;
   z-index: 10;
 }
-.dock-label { font-size: 11px; color: rgba(0, 0, 0, 0.6); margin-top: 5px; }
-.page-indicators { position: absolute; bottom: 110px; left: 0; width: 100%; display: flex; justify-content: center; gap: 8px; pointer-events: none;z-index: 50;}
-.dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(0, 0, 0, 0.1); transition: 0.3s; }
-.dot.active { background: rgba(0, 0, 0, 0.4); }
+
+.dock-label {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-top: 5px;
+}
+
+.page-indicators {
+  position: absolute;
+  bottom: 110px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  transition: 0.3s;
+}
+
+.dot.active {
+  background: rgba(0, 0, 0, 0.4);
+}
+
 .dock-icon-img {
   width: 55px;
   height: 55px;
@@ -493,15 +649,18 @@ const appList = ref([
   padding: 20px;
   gap: 33px;
   padding: 20px;
-  margin-top:  10px; /* 避开状态栏 */
-  width: 100%;      /* 确保容器占满宽度 */
+  margin-top: 10px;
+  /* 避开状态栏 */
+  width: 100%;
+  /* 确保容器占满宽度 */
   box-sizing: border-box;
 }
 
 .widget {
   width: 155px;
   height: 155px;
-  background: rgba(255, 255, 255, 0.3); /* 奶油色背景下的半透明白色 */
+  background: rgba(255, 255, 255, 0.3);
+  /* 奶油色背景下的半透明白色 */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 28px;
@@ -515,24 +674,55 @@ const appList = ref([
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
 }
 
-.widget-title { font-size: 14px; font-weight: 600; opacity: 0.7; }
-.days-count { font-size: 42px; font-weight: bold; line-height: 1; }
-.days-label { font-size: 11px; opacity: 0.5; }
+.widget-title {
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.7;
+}
 
-.temp { font-size: 48px; font-weight: 300; line-height: 1; }
-.desc { font-size: 14px; font-weight: 600; margin-top: 5px; }
-.city-name { font-size: 13px; opacity: 0.6; }
+.days-count {
+  font-size: 42px;
+  font-weight: bold;
+  line-height: 1;
+}
 
-.widget:active { transform: scale(0.95); transition: 0.1s; }
+.days-label {
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+.temp {
+  font-size: 48px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.desc {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.city-name {
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.widget:active {
+  transform: scale(0.95);
+  transition: 0.1s;
+}
 
 .motto-banner {
-  width: 345px; /* 宽度与上方两个小组件加间隙的总和接近 */
+  width: 345px;
+  /* 宽度与上方两个小组件加间隙的总和接近 */
   height: 100px;
   background: rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 25px;
-  margin: 0 auto; /* 水平居中 */
+  margin: 0 auto;
+  /* 水平居中 */
   display: flex;
   align-items: center;
   padding: 12px;
@@ -583,15 +773,18 @@ const appList = ref([
 
 .ruler-widget-container {
   width: 100%;
-  height: 130px; /* 👈 把 flex: 1 改为固定高度，比如 140px */
+  height: 130px;
+  /* 👈 把 flex: 1 改为固定高度，比如 140px */
   display: flex;
-  align-items: flex-start; /* 让轨道在剩余空间里垂直居中 */
-  padding-top: 70px; 
+  align-items: flex-start;
+  /* 让轨道在剩余空间里垂直居中 */
+  padding-top: 70px;
   justify-content: center;
   padding: 20px;
   box-sizing: border-box;
-  overflow: visible; /* 确保气泡弹出来时不会被遮挡 */
-  margin-top: 130px; 
+  overflow: visible;
+  /* 确保气泡弹出来时不会被遮挡 */
+  margin-top: 130px;
 }
 
 .ruler-track {
@@ -601,25 +794,29 @@ const appList = ref([
   border-radius: 12px;
   position: relative;
   /* 模拟刻度线 */
-  background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 15px);
+  background-image: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0px, rgba(0, 0, 0, 0.2) 1px, transparent 1px, transparent 15px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(5px);
 }
 
 .badge-stand {
   position: absolute;
-  bottom: 10px; /* 让立牌踩在轨道上 */
+  bottom: 10px;
+  /* 让立牌踩在轨道上 */
   width: 60px;
   height: 110px;
   display: flex;
   flex-direction: column;
   align-items: center;
   cursor: grab;
-  touch-action: none; /* 必须加这一行，防止拖拽时整个页面跟着动 */
+  touch-action: none;
+  /* 必须加这一行，防止拖拽时整个页面跟着动 */
   z-index: 10;
 }
 
-.badge-stand:active { transform: scale(1.05); }
+.badge-stand:active {
+  transform: scale(1.05);
+}
 
 .badge-circle {
   width: 60px;
@@ -627,12 +824,16 @@ const appList = ref([
   border-radius: 50%;
   background: white;
   border: 3px solid white;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   overflow: hidden;
-  cursor: pointer; 
+  cursor: pointer;
 }
 
-.badge-circle img { width: 100%; height: 100%; object-fit: cover; }
+.badge-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 .badge-base {
   width: 25px;
@@ -640,7 +841,7 @@ const appList = ref([
   background: rgba(255, 255, 255, 0.9);
   border-radius: 4px;
   margin-top: -5px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* 气泡样式 */
@@ -653,7 +854,7 @@ const appList = ref([
   font-size: 12px;
   color: #333;
   white-space: nowrap;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   opacity: 0;
   transform: scale(0);
   transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -682,7 +883,8 @@ const appList = ref([
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 15px;
-  padding: 0 25px 40px; /* 底部留出空间，防止贴着 Dock 栏 */
+  padding: 0 25px 40px;
+  /* 底部留出空间，防止贴着 Dock 栏 */
   width: 100%;
   box-sizing: border-box;
 }
@@ -695,7 +897,8 @@ const appList = ref([
 }
 
 .home-apps-row .app-label {
-  color: #333; /* 奶油色背景用深色字 */
+  color: #333;
+  /* 奶油色背景用深色字 */
   font-size: 11px;
 }
 
@@ -703,15 +906,18 @@ const appList = ref([
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column; /* 确保内部组件从上往下排 */
+  flex-direction: column;
+  /* 确保内部组件从上往下排 */
 }
 
 /* 确保第三页图标图片撑满容器 */
 .app-icon-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;   /* 保证图片不拉伸 */
-  border-radius: 14px; /* 保持 iOS 的圆角 */
+  object-fit: cover;
+  /* 保证图片不拉伸 */
+  border-radius: 14px;
+  /* 保持 iOS 的圆角 */
   display: block;
 }
 
@@ -720,15 +926,16 @@ const appList = ref([
   width: 60px;
   height: 60px;
   position: relative;
-  background-color: transparent; /* 去掉背景色，让图片自己显示 */
+  background-color: transparent;
+  /* 去掉背景色，让图片自己显示 */
 }
 
 /* App 库文字颜色 */
 .app-label {
   font-size: 11px;
-  color: #333; /* 奶油色背景用深色字，如果你是深色壁纸就改为 #fff */
+  color: #333;
+  /* 奶油色背景用深色字，如果你是深色壁纸就改为 #fff */
   margin-top: 6px;
   text-align: center;
 }
-
 </style>
