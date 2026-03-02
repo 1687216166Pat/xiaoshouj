@@ -358,7 +358,8 @@ const appList = ref([
   { id: 'pomodoro', name: '番茄钟', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/4782d731dk264d611f2133cff36d09e5.png' },
   { id: 'checkin', name: '打卡', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/7d3f66a8bt67b89310eb968d852c95c3.png' },
   { id: 'anniversary', name: '纪念日', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/349d11dceh2778a36596296a6cf0b47a.png' },
-  { id: 'sms', name: '信息', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/0919010c0ufaa60e76b9f8845cb7c6c3.png', badge: 1 }
+  { id: 'sms', name: '信息', icon: 'https://raw.githubusercontent.com/1687216166Pat/xiaoshouj/main/0919010c0ufaa60e76b9f8845cb7c6c3.png', badge: 1 },
+  { id: '13', name: '日程'}
 ]);
 
 </script>
@@ -938,4 +939,40 @@ const appList = ref([
   margin-top: 6px;
   text-align: center;
 }
+
+/* 数字线性图标样式 */
+.app-icon-linear {
+  width: 56px;
+  height: 56px;
+  /* 核心：1像素细边框，不要背景色 */
+  border: 1px solid #333; 
+  background: transparent;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  font-size: 18px;
+  font-weight: 300;
+  color: #ffffff;
+  /* 极小圆角（2px）或者直角，比大圆角更显高级 */
+  border-radius: 2px; 
+  transition: all 0.3s ease;
+}
+
+/* 悬停或点击时的微光效果 */
+.app-icon-linear:active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #666;
+}
+
+/* 确保 App 名字也符合极简风格 */
+.app-name {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #666;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
 </style>
