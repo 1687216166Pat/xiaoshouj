@@ -59,9 +59,10 @@
 
     <!-- 💡 【第二处：内容区域】 -->
     <div class="main-content">
-      <!-- 聊天室 -->
+      <!-- 聊天室容器 -->
       <div v-if="currentView === 'chat'" class="chat-view">
-        <div class="chat-scroll-area" ref="chatScrollArea">
+        <!-- 👈 关键：这个 div 负责滚动，ref 已挂载 -->
+        <div class="chat-scroll-area" ref="chatScrollArea" style="overflow-y: auto; height: 100%;">
           <div v-for="msg in chatMessages" :key="msg.id" :class="['msg-row', msg.type]">
             <div class="msg-content">
               <div class="bubble">{{ msg.text }}</div>
@@ -269,7 +270,7 @@
 
 <script setup>
 
-import { ref, computed, defineEmits, defineProps, nextTick } from 'vue';
+import { ref, computed, defineEmits, defineProps, nextTick, } from 'vue';
 
 // 1. 接收来自 App.vue 的数据 (💡 这一行是新加的)
 defineProps(['mode', 'androidBg', 'iosBg', 'worldBooks']);

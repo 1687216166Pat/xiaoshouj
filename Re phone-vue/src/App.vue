@@ -87,12 +87,67 @@ const updateTime = () => {
     now.getMinutes().toString().padStart(2, '0');
 };
 
-onMounted(() => {
+onMounted(async () => {
+  // --- 1. 你原来的逻辑：时钟和开机动画 ---
   updateTime();
   setInterval(updateTime, 1000);
   setTimeout(() => ballActive.value = true, 50);
   setTimeout(() => isBooting.value = false, 3000);
+
+  // --- 2. 新增逻辑：请求通知权限 ---
+  await requestNotificationPermission();
+
+  // --- 3. 新增逻辑：注册后台特工 (Service Worker) ---
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('后台特工已就位:', registration.scope);
+    } catch (err) {
+      console.error('特工注册失败:', err);
+    }
+  }
+
+  // --- 4. 关键逻辑：监听“杀掉后台/离开网页”动作 ---
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+
+      // 1. 【关键检查】：看看用户是不是在设置里关闭了主动消息
+      const activeMessageEnabled = localStorage.getItem('active_message') !== 'false';
+
+      // 如果关闭了，直接返回，什么都不做
+      if (!activeMessageEnabled) {
+        console.log('主动消息已关闭，不发送后台通知');
+        return;
+      }
+
+      // --- 以下是原本的发送逻辑，只有在开启时才会执行 ---
+
+      // 2. 发送系统通知
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SCHEDULE_NOTIFICATION',
+          title: 'Alex',
+          body: '我刚才想到了个新点子，你还在吗？',
+          delay: 8000
+        });
+      }
+
+      // 3. 同步到聊天记录
+      const offlineMsg = {
+        id: Date.now(),
+        type: 'them',
+        text: '我刚才想到了个新点子，你还在吗？',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      chatMessages.value.push(offlineMsg);
+      localStorage.setItem('chat_history_Alex', JSON.stringify(chatMessages.value));
+    }
+  });
+
+  // --- 5. 启动你原本的随机消息逻辑 ---
+  scheduleRandomMessage();
 });
+
 
 // 保存：修改模式的函数里加入保存逻辑
 const handleModeUpdate = (newMode) => {
@@ -530,7 +585,7 @@ onMounted(async () => {
     <!-- 5. 主屏幕层 -->
     <!-- Add ref to the chat scroll area if you have a chat container -->
     <HomeView :mode="globalMode" :android-bg="androidBg" :ios-bg="iosBg" @open-settings="isSettingsOpen = true"
-      @open-talk="isTalkOpen = true" ref="chatScrollArea" />
+      @open-talk="isTalkOpen = true" />
 
     <!-- 6. 设置 App (iOS 缩放动效版) -->
     <Transition name="app-zoom">
