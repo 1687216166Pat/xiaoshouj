@@ -346,49 +346,51 @@ const sendActiveMessage = async () => {
 
 // 随机发送消息
 const scheduleRandomMessage = () => {
-  // 从设置里读取用户配置的时间间隔
+  // 1. 获取时间间隔（保持你原来的逻辑）
   const messageInterval = parseInt(localStorage.getItem('message_interval') || '15');
   const messageUnit = localStorage.getItem('message_unit') || 'minute';
 
-  // 转换成毫秒
   let baseInterval;
   switch (messageUnit) {
-    case 'second':
-      baseInterval = messageInterval * 1000;
-      break;
-    case 'minute':
-      baseInterval = messageInterval * 60 * 1000;
-      break;
-    case 'hour':
-      baseInterval = messageInterval * 60 * 60 * 1000;
-      break;
-    case 'day':
-      baseInterval = messageInterval * 24 * 60 * 60 * 1000;
-      break;
-    default:
-      baseInterval = 15 * 60 * 1000; // 默认 15 分钟
+    case 'second': baseInterval = messageInterval * 1000; break;
+    case 'minute': baseInterval = messageInterval * 60 * 1000; break;
+    case 'hour': baseInterval = messageInterval * 60 * 60 * 1000; break;
+    case 'day': baseInterval = messageInterval * 24 * 60 * 60 * 1000; break;
+    default: baseInterval = 15 * 60 * 1000;
   }
 
-  // 设置随机范围（±30%）
   const minInterval = baseInterval * 0.7;
   const maxInterval = baseInterval * 1.3;
-
-  console.log(`主动发消息间隔：${messageInterval}${messageUnit}（${minInterval / 1000}秒 - ${maxInterval / 1000}秒）`);
-
-
   const randomInterval = Math.floor(Math.random() * (maxInterval - minInterval)) + minInterval;
 
+  // 2. 核心定时器
   setTimeout(() => {
     const activeMessageEnabled = localStorage.getItem('active_message') !== 'false';
     if (!activeMessageEnabled) {
-      console.log('主动发消息功能已关闭，跳过本次发送');
-      scheduleRandomMessage(); // 继续下一次检查
+      scheduleRandomMessage();
       return;
     }
-    const timeSinceLastActive = Date.now() - lastActiveMessageTime.value;
-    if (currentView.value === 'chat' && timeSinceLastActive > 5 * 60 * 1000) {
-      sendActiveMessage();
+
+    // --- 核心修改：判断当前 App 状态 ---
+    if (document.visibilityState === 'visible') {
+      // 场景 A：用户正在看手机，直接在聊天窗口里显示消息
+      const timeSinceLastActive = Date.now() - lastActiveMessageTime.value;
+      if (currentView.value === 'chat' && timeSinceLastActive > 5 * 60 * 1000) {
+        sendActiveMessage();
+      }
+    } else {
+      // 场景 B：用户杀掉了后台、锁屏了、或者在看别的 App
+      // 我们通过“后台特工”弹出真正的系统通知
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SCHEDULE_NOTIFICATION',
+          title: 'Alex',
+          body: '我刚才想到了一个新的设计点，你现在方便看下吗？'
+        });
+      }
     }
+
+    // 继续循环下一次随机消息
     scheduleRandomMessage();
   }, randomInterval);
 };
@@ -413,14 +415,36 @@ const showNotification = (title, body) => {
 
 // 请求通知权限
 const requestNotificationPermission = async () => {
-  if ('Notification' in window && Notification.permission === 'default') {
-    await Notification.requestPermission();
+  if (!('Notification' in window)) {
+    console.error("此浏览器不支持桌面通知");
+    return;
+  }
+
+  if (Notification.permission === 'default') {
+    // 弹出询问框
+    const permission = await Notification.requestPermission();
+    console.log('用户授权结果:', permission); // 'granted' (允许) 或 'denied' (拒绝)
   }
 };
 
 // 组件挂载时启动
-onMounted(() => {
-  requestNotificationPermission();
+onMounted(async () => {
+  // 1. 第一步：请求通知权限（只有用户允许了，后台通知才能弹出来）
+  await requestNotificationPermission();
+
+  // 2. 第二步：注册后台特工 (Service Worker)
+  // 这段代码的作用是：在浏览器后台安插一个“潜伏者”，即使网页关了，它也能发通知
+  if ('serviceWorker' in navigator) {
+    try {
+      // 这里的 /sw.js 对应你项目 public 文件夹下的 sw.js 文件
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('Service Worker 注册成功，作用域为:', registration.scope);
+    } catch (error) {
+      console.log('Service Worker 注册失败，请检查 public 文件夹下是否有 sw.js 文件:', error);
+    }
+  }
+
+  // 3. 第三步：启动你原本的消息逻辑
   scheduleRandomMessage();
 });
 
