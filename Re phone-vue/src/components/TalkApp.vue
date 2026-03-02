@@ -175,13 +175,13 @@
           </div>
 
           <!-- 5. 危险操作 -->
-<div class="line-divider"></div>
-<div class="info-list">
-  <div class="info-row"><span class="label bold">删除聊天</span></div>
-  <div class="info-row"><span class="label">举报</span></div>
-  <div class="info-row" @click="clearChat" style="cursor: pointer;"><span class="label">清空聊天</span></div>
-</div>
-<div style="height: 40px;"></div>
+          <div class="line-divider"></div>
+          <div class="info-list">
+            <div class="info-row"><span class="label bold">删除聊天</span></div>
+            <div class="info-row"><span class="label">举报</span></div>
+            <div class="info-row" @click="clearChat" style="cursor: pointer;"><span class="label">清空聊天</span></div>
+          </div>
+          <div style="height: 40px;"></div>
         </main>
       </div>
 
@@ -560,7 +560,7 @@ const sendMessage = async () => {
 const clearChat = () => {
   // 1. 弹出确认框，防止手抖误删
   if (confirm('确定要清空所有聊天记录吗？此操作不可撤销。')) {
-    
+
     // 2. 将内存中的聊天记录重置为初始状态（或者空数组 []）
     chatMessages.value = [
       { id: 1, type: 'them', text: '你好，请问 Re phone 的设计稿确认了吗？', time: '14:30' },
@@ -569,7 +569,7 @@ const clearChat = () => {
 
     // 3. 彻底删除硬盘里的备份
     localStorage.removeItem('chat_history_Alex');
-    
+
     // 提示用户
     alert('记录已清空');
   }
