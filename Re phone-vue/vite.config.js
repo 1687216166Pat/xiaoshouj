@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    vue(), 
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
@@ -17,8 +20,8 @@ export default defineConfig({
           },
         ],
       },
-      // 开启后台运行支持
       workbox: {
+        // 这里的配置确保 Service Worker 能够处理基础的缓存
         runtimeCaching: [],
       },
     }),
