@@ -464,6 +464,12 @@ const sendMessage = async () => {
     content: msg.text
   }));
 
+  // --- 💡 [新增：获取更详细的时间信息] ---
+  const now = new Date();
+  const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+  const detailedTime = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${weekDays[now.getDay()]} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+  // ---------------------------------------
+
   // 5. 组装完整的请求体（包含你的"底层思维链"）
   const messagesPayload = [
     {
@@ -480,7 +486,7 @@ const sendMessage = async () => {
 
 [当前情景]
 - 我们的关系: 朋友
-- 现在时间: ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+- 当前准确时间: ${detailedTime}
 - 我的人设: ${persona.value}
 - 对方称呼我: ${callMe.value}`
     },
