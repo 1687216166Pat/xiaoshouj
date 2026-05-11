@@ -113,6 +113,36 @@
       </footer>
     </main>
   </div>
+
+<template>
+  <!-- 绑定鼠标和手指两套事件 -->
+  <div 
+    class="app-container" 
+    :class="{ 'sidebar-is-hidden': isSidebarHidden }"
+    @touchstart="onDragStart"
+    @touchend="onDragEnd"
+    @mousedown="onDragStart"
+    @mouseup="onDragEnd"
+  >
+    <!-- 左侧边栏 -->
+    <aside class="sidebar">
+      <div class="action-buttons">
+        <!-- 💡 返回按钮：确保它在这里 -->
+        <button class="circle-btn" @click.stop="handleBack">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <!-- ...其他按钮... -->
+      </div>
+      <!-- ... -->
+    </aside>
+
+    <!-- 右侧聊天主区域 -->
+    <main class="chat-main">
+      <!-- ...内容... -->
+    </main>
+  </div>
+</template>
+
 </template>
 
 <script setup>
@@ -215,6 +245,36 @@ const scrollToBottom = () => {
 };
 
 onMounted(scrollToBottom);
+// --- 1. 变量定义 ---
+const isSidebarHidden = ref(false);
+let startX = 0;
+let isDragging = false; // 增加一个抓取状态
+
+// --- 2. 统一处理函数 (支持鼠标和手指) ---
+const onDragStart = (e) => {
+  // 获取起始坐标（兼容鼠标和手指）
+  startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+  isDragging = true;
+};
+
+const onDragEnd = (e) => {
+  if (!isDragging) return;
+  
+  // 获取结束坐标
+  const endX = e.type.includes('mouse') ? e.clientX : e.changedTouches[0].clientX;
+  const diffX = endX - startX;
+
+  // 这里的 50 是滑动灵敏度，数字越小越灵敏
+  if (diffX < -50) {
+    isSidebarHidden.value = true; // 左滑隐藏
+    console.log("侧边栏已隐藏");
+  } else if (diffX > 50) {
+    isSidebarHidden.value = false; // 右滑显示
+    console.log("侧边栏已唤出");
+  }
+  isDragging = false;
+};
+
 </script>
 
 <style scoped>
@@ -228,16 +288,33 @@ onMounted(scrollToBottom);
   padding: 20px;
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: padding 0.4s ease; /* 增加内边距动画 */
 }
 
-/* 2. 左侧边栏 (1/5 宽度) */
+/* 2. 左侧边栏 (这是它“展开”时的正常状态) */
 .sidebar {
-  flex: 0 0 3px;
-  margin-right: 10px;
-  /* 2厘米左右的空气感 */
+  flex: 0 0 50px;    /* 👈 这里填你正常的宽度，不要填 3px */
+  margin-right: 10px; /* 👈 这里填你想要的空气感间距 */
+  
+  /* 下面这些是保证动画丝滑的关键 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+  overflow: hidden; 
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  /* 💡 必须加这两行，确保侧边栏在最上层 */
+  position: relative;
+  z-index: 100; 
+}
+
+/* 3. 必须要加上这一段：这是它“隐藏”时的状态 */
+.sidebar-is-hidden .sidebar {
+  flex: 0 0 0px;       /* 👈 隐藏时宽度归零 */
+  margin-right: 0px;   /* 👈 隐藏时左右间距归零 */
+  opacity: 0;          /* 👈 隐藏时透明 */
+  pointer-events: none; /* 👈 隐藏时鼠标点不到它 */
 }
 
 .action-buttons {
@@ -258,6 +335,8 @@ onMounted(scrollToBottom);
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  position: relative;
+  z-index: 110;
   color: #1c1c1e;
 }
 
@@ -307,7 +386,7 @@ onMounted(scrollToBottom);
   height: 28px;
 }
 
-/* 3. 右侧主区域 */
+/* 4. 右侧主区域 (确保层级低于侧边栏) */
 .chat-main {
   flex: 1;
   background: white;
@@ -316,6 +395,36 @@ onMounted(scrollToBottom);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* 💡 关键：层级设为 10，比侧边栏的 100 低 */
+  position: relative;
+  z-index: 10; 
+}
+
+/* 💡 可选：如果你希望隐藏侧边栏时，聊天框撑得更满（去掉圆角） */
+.sidebar-is-hidden .chat-main {
+  border-radius: 12px; /* 沉浸模式下圆角变小 */
+}
+
+/* 5. 沉浸式微调：当隐藏时，让主区域稍微撑满一点 */
+.sidebar-is-hidden .app-container {
+  padding: 10px; /* 侧边栏隐藏时，缩小外边距，更沉浸 */
+}
+
+.sidebar-is-hidden .chat-main {
+  border-radius: 16px; /* 隐藏时圆角稍微变小一点点 */
+}
+
+/* 6. 唤回按钮样式 */
+.expand-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  color: #1c1c1e;
 }
 
 .chat-header {
