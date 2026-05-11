@@ -593,12 +593,13 @@ onMounted(async () => {
         @close="isSettingsOpen = false" @update-mode="handleModeUpdate" @update-wallpaper="updateWallpaper" />
     </Transition>
 
-    <!-- 7. Talk App (同样使用缩放动效) -->
+    <!-- 7. Talk App (增加 style 确保它是固定定位，不影响底层布局) -->
     <Transition name="app-zoom">
-      <TalkApp v-if="isTalkOpen" :mode="globalMode" :android-bg="androidBg" :ios-bg="iosBg" :world-books="allWorldBooks"
-        @close="isTalkOpen = false" @update-mode="handleModeUpdate" @update-wallpaper="updateWallpaper" />
+      <TalkApp v-show="isTalkOpen" :mode="globalMode" :android-bg="androidBg" :ios-bg="iosBg"
+        :world-books="allWorldBooks" @close="isTalkOpen = false" @update-mode="handleModeUpdate"
+        @update-wallpaper="updateWallpaper"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999;" />
     </Transition>
-
 
   </div> <!-- 👈 对应 id="app" 的闭合 -->
 </template> <!-- 👈 对应 template 的闭合 -->
@@ -798,16 +799,20 @@ body {
 }
 
 /* 2. App 缩放返回动画 (仿 iOS) */
+/* 动画过程中的配置 */
 .app-zoom-enter-active,
 .app-zoom-leave-active {
-  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.4s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s linear;
+  pointer-events: none;
+  /* 💡 动画时禁止点击，防止误触导致卡顿 */
 }
 
+/* 进入前和离开后的状态 */
 .app-zoom-enter-from,
 .app-zoom-leave-to {
   opacity: 0;
   transform: scale(0.85);
-  /* 缩放效果 */
+  /* 稍微缩小一点，更有 iOS 的感觉 */
 }
 
 /* 3. 开屏淡出 */
